@@ -1,0 +1,10 @@
+﻿  ConsoleApplication.cpp
+c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(180): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(271): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(272): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(276): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(277): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(279): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(280): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(289): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+  ConsoleApplication.vcxproj -> C:\Users\11792\source\repos\ConsoleApplication\Debug\ConsoleApplication.exe
