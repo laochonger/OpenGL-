@@ -21,9 +21,6 @@
     <ClInclude Include="Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="shader_m.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>头文件</Filter>
     </ClInclude>

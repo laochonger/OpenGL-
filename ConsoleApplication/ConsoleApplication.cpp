@@ -22,6 +22,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 unsigned int loadTexture(const char *path);
 unsigned int loadCubemap(vector<std::string> faces);
+void renderScene(const Shader &shader);
+//void renderCube();
+
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -36,6 +39,8 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+unsigned int planeVAO;
 
 int main()
 {
@@ -52,7 +57,7 @@ int main()
 
 	// glfw window creation
 	// --------------------
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "B17040312", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -89,8 +94,9 @@ int main()
 	// -----------
 	//Model ourModel("sphere/soccerball/untitled.obj");
 	//Model ourModel("sphere/Robot/Robot.obj");
+	Model nanosuit("res/objects/nanosuit/nanosuit.obj");
 	Model ourModel("res/objects/ball/11715_ball_v3_L1.obj");
-	Shader skyboxShader("res/shaders/6.2.skybox.vs", "res/shaders/6.2.skybox.fs");
+	Shader skyboxShader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
 
 	float skyboxVertices[] = {
 		// positions          
@@ -161,6 +167,81 @@ int main()
 	skyboxShader.use();
 	skyboxShader.setInt("skybox", 0);
 
+
+
+	Shader shader("res/shaders/shadow_mapping.vs", "res/shaders/shadow_mapping.fs");
+	Shader simpleDepthShader("res/shaders/shadow_mapping_depth.vs", "res/shaders/shadow_mapping_depth.fs");
+	Shader debugDepthQuad("res/shaders/debug_quad.vs", "res/shaders/debug_quad_depth.fs");
+
+
+	float planeVertices[] = {
+		// positions            // normals         // texcoords
+		 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+		-25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+		-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+
+		 25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+		-25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+		 25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
+	};
+	// plane VAO
+	unsigned int planeVBO;
+	glGenVertexArrays(1, &planeVAO);
+	glGenBuffers(1, &planeVBO);
+	glBindVertexArray(planeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glBindVertexArray(0);
+
+
+	unsigned int woodTexture = loadTexture("bottom.jpg");
+
+	// configure depth map FBO
+	// -----------------------
+	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	unsigned int depthMapFBO;
+	glGenFramebuffers(1, &depthMapFBO);
+	// create depth texture
+	unsigned int depthMap;
+	glGenTextures(1, &depthMap);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+	shader.use();
+	shader.setInt("diffuseTexture", 0);
+	shader.setInt("shadowMap", 1);
+	debugDepthQuad.use();
+	debugDepthQuad.setInt("depthMap", 0);
+
+	// lighting info
+	// -------------
+	glm::vec3 lightPos(-.05f, 0.5f, -0.5f);
+
+
+
+
+
+
+
+
 	while (!glfwWindowShouldClose(window))
 	{
 		// per-frame time logic
@@ -177,24 +258,117 @@ int main()
 		// ------
 		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glm::mat4 lightProjection, lightView;
+		glm::mat4 lightSpaceMatrix;
+		float near_plane = 1.0f, far_plane = 7.5f;
+		lightProjection = glm::ortho(-15.0f, 15.0f, -15.0f, 15.0f, near_plane, far_plane);
+		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+		lightSpaceMatrix = lightProjection * lightView;
+		// render scene from light's point of view
+		simpleDepthShader.use();
+		simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
-		// don't forget to enable shader before setting uniforms
-		ourShader.use();
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, woodTexture);
+		renderScene(simpleDepthShader);
 
-		// view/projection transformations
+
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.2f, 2.0f)); // translate it down so it's at the center of the scene
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+		simpleDepthShader.setMat4("model", model);
+		ourModel.Draw(simpleDepthShader);
+
+		//nanosuit.Draw(simpleDepthShader);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		// reset viewport
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// 2. render scene as normal using the generated depth/shadow map  
+		// --------------------------------------------------------------
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		shader.use();
+
+		
+
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
+		shader.setMat4("projection", projection);
+		shader.setMat4("view", view);
+		// set light uniforms
+		shader.setVec3("viewPos", camera.Position);
+		shader.setVec3("lightPos", lightPos);
+		shader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, woodTexture);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
+
+
+
+		glCullFace(GL_FRONT);
+
+
+
+		renderScene(shader);
+
+		ourShader.use();
+
 		ourShader.setMat4("projection", projection);
 		ourShader.setMat4("view", view);
-		ourShader.setVec3("cameraPos", camera.Position);
 
-		// render the loaded model
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+		ourShader.setVec3("viewPos", camera.Position);
+		ourShader.setVec3("lightPos", lightPos);
+		ourShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+		//防止颠倒
+		ourShader.setVec3("cameraPos", camera.Position);
+		//glm::mat4 
+			model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.2f, 2.0f)); // translate it down so it's at the center of the scene
 		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
 		ourShader.setMat4("model", model);
 		ourModel.Draw(ourShader);
 
+		glCullFace(GL_BACK);
+		//model = glm::translate(model, glm::vec3(0.0f, 0.5f, 2.0f));
+		//nanosuit.Draw(ourShader);
+		
+
+
+
+
+
+		// don't forget to enable shader before setting uniforms
+		//ourShader.use();
+
+		// view/projection transformations
+		//glm::mat4 
+			//projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		//glm::mat4 
+			//view = camera.GetViewMatrix();
+		//ourShader.setMat4("projection", projection);
+		//ourShader.setMat4("view", view);
+		
+
+		// render the loaded model
+		//glm::mat4 model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(0.0f, 0.1f, 2.0f)); // translate it down so it's at the center of the scene
+		//model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+		//ourShader.setMat4("model", model);
+		//ourShader.setVec3("lightPos", lightPos);
+		//ourShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+		//ourModel.Draw(ourShader);
+
+		
+		
+		
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 		skyboxShader.use();
 		view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
@@ -346,4 +520,16 @@ unsigned int loadCubemap(vector<std::string> faces)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	return textureID;
+}
+
+
+
+void renderScene(const Shader &shader)
+{
+	// floor
+	glm::mat4 model = glm::mat4(1.0f);
+	shader.setMat4("model", model);
+	glBindVertexArray(planeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	
 }

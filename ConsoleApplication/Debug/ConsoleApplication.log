@@ -1,13 +1,10 @@
 ﻿  ConsoleApplication.cpp
-c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(168): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(255): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(256): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(260): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(261): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(263): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(264): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-c:\users\11792\source\repos\consoleapplication\consoleapplication\consoleapplication.cpp(273): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
-LINK : warning LNK4098: 默认库“LIBCMT”与其他库的使用冲突；请使用 /NODEFAULTLIB:library
-LINK : warning LNK4098: 默认库“MSVCRT”与其他库的使用冲突；请使用 /NODEFAULTLIB:library
-glew32s.lib(glew.obj) : warning LNK4099: 未找到 PDB“vc120.pdb”(使用“glew32s.lib(glew.obj)”或在“C:\Users\11792\source\repos\ConsoleApplication\Debug\vc120.pdb”中寻找)；正在链接对象，如同没有调试信息一样
-  ConsoleApplication.vcxproj -> C:\Users\11792\source\repos\ConsoleApplication\Debug\ConsoleApplication.exe
+c:\users\11792\source\repos\大作业\consoleapplication\consoleapplication.cpp(249): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\大作业\consoleapplication\consoleapplication.cpp(429): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\大作业\consoleapplication\consoleapplication.cpp(430): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\大作业\consoleapplication\consoleapplication.cpp(434): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\大作业\consoleapplication\consoleapplication.cpp(435): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\大作业\consoleapplication\consoleapplication.cpp(437): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\大作业\consoleapplication\consoleapplication.cpp(438): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+c:\users\11792\source\repos\大作业\consoleapplication\consoleapplication.cpp(447): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+  ConsoleApplication.vcxproj -> C:\Users\11792\source\repos\大作业\Debug\ConsoleApplication.exe

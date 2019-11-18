@@ -161,7 +161,6 @@
     <ClInclude Include="model.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="shader_m.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConsoleApplication.cpp" />
